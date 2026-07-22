@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Tracker</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F3A3D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#191d2b;
+    --paper:#eef0f6;
+    --paper-2:#ffffff;
+    --line:#e1e4ee;
+    --line-strong:#c7cbdb;
+    --muted:#6b7086;
+    --accent:#4338ca;
+    --accent-2:#5b4fe0;
+    --accent-soft:#eeecfd;
+    --amber:#b06a12;
+    --amber-bg:#fbf0dd;
+    --rust:#c0392b;
+    --rust-bg:#fbe9e7;
+    --sage:#1f8a5f;
+    --sage-bg:#e2f6ec;
+    --radius:14px;
+    --shadow-sm:0 1px 2px rgba(25,29,43,0.06);
+    --shadow-md:0 8px 24px -8px rgba(25,29,43,0.18);
+    --bg-glow-1:#e4e1fb;
+    --bg-glow-2:#dcecf5;
+  }
+  html[data-theme="dark"]{
+    --ink:#eceaf5;
+    --paper:#0c0d13;
+    --paper-2:#181a24;
+    --line:#2a2c3b;
+    --line-strong:#3c3f52;
+    --muted:#9b9db1;
+    --accent:#caa968;
+    --accent-2:#e2c084;
+    --accent-soft:rgba(202,169,104,0.16);
+    --amber:#dcae52;
+    --amber-bg:rgba(220,174,82,0.14);
+    --rust:#e2695b;
+    --rust-bg:rgba(226,105,91,0.14);
+    --sage:#5fd0a3;
+    --sage-bg:rgba(95,208,163,0.14);
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md:0 10px 30px -10px rgba(0,0,0,0.6);
+    --bg-glow-1:#241f38;
+    --bg-glow-2:#1a2430;
+  }
+  html[data-theme="sepia"]{
+    --ink:#3b2f22;
+    --paper:#f3ead9;
+    --paper-2:#fffaf1;
+    --line:#e2d3b8;
+    --line-strong:#ccb489;
+    --muted:#8a7860;
+    --accent:#2f6f6a;
+    --accent-2:#3f8681;
+    --accent-soft:#e1efed;
+    --amber:#a6701f;
+    --amber-bg:#f3e5cd;
+    --rust:#a23f2e;
+    --rust-bg:#f3dcd2;
+    --sage:#3f7a4c;
+    --sage-bg:#e1ecdf;
+    --bg-glow-1:#ecdfc3;
+    --bg-glow-2:#e6ddc9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Manrope',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:
+      radial-gradient(1100px 480px at 100% -10%, var(--bg-glow-1) 0%, transparent 55%),
+      radial-gradient(900px 420px at -10% 0%, var(--bg-glow-2) 0%, transparent 50%),
+      var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    transition:background .2s, color .2s;
+  }
+  .mono{font-family:'JetBrains Mono',"SFMono-Regular",Consolas,monospace;}
+  header{
+    padding:28px 28px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  header h1{
+    margin:0;
+    font-size:24px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  header .eyebrow{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:4px;
+  }
+  .header-actions{display:flex;gap:10px;align-items:center;}
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+  }
+  .btn{
+    padding:10px 18px;
+    border-radius:999px;
+    font-size:13.5px;
+    font-weight:600;
+    background:var(--paper-2);
+    border:1px solid var(--line-strong);
+    color:var(--ink);
+    box-shadow:var(--shadow-sm);
+    transition:transform .1s, box-shadow .15s;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff;
+    border:1px solid transparent;
+  }
+  .btn-icon{
+    width:38px;height:38px;
+    border-radius:12px;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    font-size:17px;
+    color:var(--muted);
+    box-shadow:var(--shadow-sm);
+    transition:transform .1s;
+  }
+  .btn-icon:hover{color:var(--accent);transform:translateY(-1px);}
+  main{padding:6px 28px 70px;max-width:960px;margin:0 auto;}
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;
+    margin-bottom:22px;
+  }
+  .stat-card{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    box-shadow:var(--shadow-sm);
+  }
+  .stat-card .num{font-size:26px;font-weight:800;letter-spacing:-0.02em;}
+  .stat-card .lbl{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
+  .stat-card.rust .num{color:var(--rust);}
+  .stat-card.amber .num{color:var(--amber);}
+  .stat-card.accent .num{color:var(--accent);}
+  .stat-card.sage .num{color:var(--sage);}
+
+  .toolbar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:0 0 18px;
+    align-items:center;
+  }
+  .pill{
+    padding:8px 16px;
+    border-radius:999px;
+    font-size:12.5px;
+    font-weight:700;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    color:var(--muted);
+    transition:all .12s;
+  }
+  .pill:hover{border-color:var(--accent);color:var(--accent);}
+  .pill.active{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  .toolbar select{
+    margin-left:auto;
+    padding:9px 12px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--paper-2);
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .task-list{display:flex;flex-direction:column;gap:10px;}
+  .task-card{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-left:4px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:15px 18px;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    box-shadow:var(--shadow-sm);
+    transition:transform .1s, box-shadow .15s;
+  }
+  .task-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+  .task-card.prio-high{border-left-color:var(--rust);}
+  .task-card.prio-medium{border-left-color:var(--amber);}
+  .task-card.prio-low{border-left-color:var(--sage);}
+  .task-card.done{opacity:0.55;}
+  .check{
+    width:22px;height:22px;
+    border-radius:7px;
+    border:1.5px solid var(--line-strong);
+    flex:none;
+    margin-top:1px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--paper-2);
+    cursor:pointer;
+    transition:all .12s;
+  }
+  .check:hover{border-color:var(--accent);}
+  .check.checked{background:var(--sage);border-color:var(--sage);color:#fff;font-size:14px;}
+  .task-body{flex:1;min-width:0;}
+  .task-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .task-name{font-size:15px;font-weight:700;letter-spacing:-0.01em;}
+  .task-name.done{text-decoration:line-through;}
+  .badge{
+    font-size:10.5px;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:999px;
+    letter-spacing:0.02em;
+  }
+  .badge-high{background:var(--rust-bg);color:var(--rust);}
+  .badge-medium{background:var(--amber-bg);color:var(--amber);}
+  .badge-low{background:var(--sage-bg);color:var(--sage);}
+  .task-meta{
+    margin-top:5px;
+    font-size:12px;
+    color:var(--muted);
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    font-weight:500;
+  }
+  .task-meta .id{color:var(--line-strong);}
+  .task-actions{display:flex;gap:6px;flex:none;}
+  .empty{
+    text-align:center;
+    padding:70px 20px;
+    color:var(--muted);
+    background:var(--paper-2);
+    border-radius:var(--radius);
+    border:1px dashed var(--line-strong);
+  }
+  .empty .glyph{font-size:30px;display:block;margin-bottom:10px;}
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;
+    background:rgba(25,29,43,0.45);
+    backdrop-filter:blur(2px);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 16px;
+    overflow-y:auto;
+    z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--paper-2);
+    border-radius:18px;
+    padding:26px;
+    width:100%;
+    max-width:440px;
+    border:1px solid var(--line);
+    box-shadow:0 30px 60px -20px rgba(25,29,43,0.4);
+  }
+  .modal h2{margin:0 0 18px;font-size:17px;font-weight:800;letter-spacing:-0.01em;}
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field .hint{font-size:11px;color:var(--muted);margin-top:5px;font-weight:500;}
+  .field input,.field select,.field textarea{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--line-strong);
+    font-size:13.5px;
+    font-family:inherit;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    outline:none;border-color:var(--accent);background:#fff;
+  }
+  .field textarea{resize:vertical;min-height:56px;}
+  .chip-box{
+    display:flex;flex-wrap:wrap;gap:6px;
+    padding:8px;border-radius:10px;border:1px solid var(--line-strong);
+    background:var(--paper);
+  }
+  .chip-box:focus-within{border-color:var(--accent);background:#fff;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--accent-soft);color:var(--accent);
+    font-size:12px;font-weight:600;
+    padding:5px 6px 5px 10px;border-radius:999px;
+  }
+  .chip button{
+    background:none;border:none;color:var(--accent);
+    font-size:13px;line-height:1;cursor:pointer;padding:2px;
+  }
+  .chip-input{
+    border:none;outline:none;background:transparent;
+    flex:1;min-width:120px;font-size:13.5px;font-family:inherit;
+    padding:4px;color:var(--ink);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+  .link-btn{
+    background:none;border:none;color:var(--rust);font-size:12.5px;
+    font-weight:600;padding:0;
+  }
+  /* settings */
+  .settings-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 0;border-bottom:1px solid var(--line);
+  }
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row .label{font-size:13.5px;font-weight:700;}
+  .settings-row .desc{font-size:12px;color:var(--muted);margin-top:2px;}
+  .switch{
+    width:42px;height:25px;border-radius:999px;
+    background:var(--line-strong);position:relative;flex:none;
+    transition:background .15s;cursor:pointer;
+  }
+  .switch.on{background:var(--sage);}
+  .switch::after{
+    content:"";position:absolute;top:2.5px;left:2.5px;
+    width:20px;height:20px;border-radius:50%;background:#fff;
+    transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch.on::after{transform:translateX(17px);}
+  .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px;}
+  .theme-swatch{
+    border-radius:12px;border:2px solid var(--line);
+    padding:10px;cursor:pointer;text-align:left;
+    background:var(--paper-2);
+  }
+  .theme-swatch.selected{border-color:var(--accent);}
+  .theme-swatch .preview{
+    height:36px;border-radius:8px;margin-bottom:8px;
+    display:flex;align-items:center;justify-content:flex-end;padding:6px;
+  }
+  .theme-swatch .preview span{width:14px;height:14px;border-radius:50%;}
+  .theme-swatch .tname{font-size:11.5px;font-weight:700;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;
+    padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .2s;
+    z-index:100;box-shadow:var(--shadow-md);
+  }
+  .toast.show{opacity:1;}
+  .config-warning{
+    margin:0 28px 0;padding:12px 16px;border-radius:10px;
+    background:var(--rust-bg);color:var(--rust);font-size:13px;
+    max-width:960px;margin-left:auto;margin-right:auto;font-weight:600;
+  }
+  footer{
+    text-align:center;padding:20px;font-size:11.5px;color:var(--muted);font-weight:600;
+    letter-spacing:0.02em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="userLabel">Task Tracker</h1>
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" id="settingsBtn" title="Settings">&#9881;</button>
+    <button class="btn btn-primary" id="addTaskBtn">+ New task</button>
+  </div>
+</header>
+
+<div id="configWarning" class="config-warning" style="display:none;">
+  Firebase config bosano hoyni ekhono &mdash; index.html file-er upore firebaseConfig object-e nijer project-er values boso.
+</div>
+
+<main>
+  <div class="stats" id="statsBar"></div>
+
+  <div class="toolbar">
+    <button class="pill active" data-filter-cat="All">All</button>
+    <button class="pill" data-filter-cat="Official">Official</button>
+    <button class="pill" data-filter-cat="Personal">Personal</button>
+    <button class="pill" data-filter-cat="Birthday / Anniversary">Birthday</button>
+    <select id="statusFilter">
+      <option value="Pending">Pending</option>
+      <option value="All">All statuses</option>
+      <option value="Completed">Completed</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <span class="glyph">&#9711;</span>
+    Kono task nai ei filter-e.
+  </div>
+</main>
+
+
+
+<!-- Add/Edit task modal -->
+<div class="overlay" id="taskOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">New task</h2>
+    <input type="hidden" id="taskDocId">
+    <div class="field">
+      <label for="f_name">Task name</label>
+      <input type="text" id="f_name" placeholder="e.g. Submit salary sheet">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="f_category">Category</label>
+        <select id="f_category">
+          <option>Official</option>
+          <option>Personal</option>
+          <option>Birthday / Anniversary</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f_priority">Priority</label>
+        <select id="f_priority">
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="f_dueDate">Due date</label>
+        <input type="date" id="f_dueDate">
+      </div>
+      <div class="field">
+        <label for="f_repeat">Repeat</label>
+        <select id="f_repeat">
+          <option>None</option>
+          <option>Daily</option>
+          <option>Weekly</option>
+          <option>Monthly</option>
+          <option>Yearly</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="f_status">Status</label>
+      <select id="f_status">
+        <option>Pending</option>
+        <option>Completed</option>
+        <option>Cancelled</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="f_emailInput">Notify email(s)</label>
+      <div class="chip-box" id="emailChipBox">
+        <input type="text" id="f_emailInput" class="chip-input" list="knownEmails" placeholder="Type email, enter to add">
+      </div>
+      <datalist id="knownEmails"></datalist>
+      <div class="hint">Ei task-er reminder ei email(s)-e jabe. Age use kora email dropdown-e ashbe, notun-o type kora jay.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="link-btn" id="deleteTaskBtn" style="display:none;margin-right:auto;">Delete task</button>
+      <button class="btn" id="cancelModalBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveTaskBtn">Save task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h2>Settings</h2>
+    <div class="field">
+      <label for="f_email">Default email(s)</label>
+      <textarea id="f_email" placeholder="you@gmail.com, colleague@gmail.com"></textarea>
+      <div class="hint">Kono task-e nijer email na dile ei default email(s)-e reminder jabe. Ekadhik hole comma diye alada koro.</div>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="label">Push notifications</div>
+        <div class="desc">Reminder o email-er shathe browser push-o pathabe</div>
+      </div>
+      <div class="switch" id="pushSwitch"></div>
+    </div>
+    <div class="field">
+      <label>Theme</label>
+      <div class="theme-grid" id="themeGrid">
+        <button type="button" class="theme-swatch" data-theme="light">
+          <div class="preview" style="background:#eef0f6;border:1px solid #dcdfef;"><span style="background:#4338ca;"></span></div>
+          <div class="tname">Light</div>
+        </button>
+        <button type="button" class="theme-swatch" data-theme="dark">
+          <div class="preview" style="background:#0c0d13;"><span style="background:#caa968;"></span></div>
+          <div class="tname">Dark elegant</div>
+        </button>
+        <button type="button" class="theme-swatch" data-theme="sepia">
+          <div class="preview" style="background:#f3ead9;border:1px solid #e2d3b8;"><span style="background:#2f6f6a;"></span></div>
+          <div class="tname">Sepia</div>
+        </button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="closeSettingsBtn">Close</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>Designed by Hasan Jabed</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getMessaging, getToken, isSupported } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging.js";
+
+// ============================================================
+// FIREBASE CONFIG — nijer Firebase project-er values ekhane boso
+// (Firebase console > Project settings > General > Your apps > SDK setup)
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDpXGqaD1E5rYza47taMp7MoGhoDq7Sb9Q",
+  authDomain: "task-tracker-fd535.firebaseapp.com",
+  projectId: "task-tracker-fd535",
+  storageBucket: "task-tracker-fd535.firebasestorage.app",
+  messagingSenderId: "596367601178",
+  appId: "1:596367601178:web:27692ab5c2d6b7a156eba3"
+};
+// Push notification-er jonno VAPID key (Firebase console > Project settings > Cloud Messaging > Web Push certificates)
+const VAPID_KEY = "YOUR_VAPID_KEY";
+// ============================================================
+
+if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+  document.getElementById("configWarning").style.display = "block";
+}
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const SETTINGS_DOC = doc(db, "settings", "user");
+const tasksCol = collection(db, "tasks");
+
+let allTasks = [];
+let currentCategoryFilter = "All";
+let editingId = null;
+let emailChips = [];
+let selectedTheme = "light";
+
+function applyTheme(theme, save){
+  selectedTheme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll(".theme-swatch").forEach(el=>{
+    el.classList.toggle("selected", el.getAttribute("data-theme")===theme);
+  });
+  if(save){
+    setDoc(SETTINGS_DOC, { theme }, { merge:true }).catch(e=>console.error(e));
+  }
+}
+document.querySelectorAll(".theme-swatch").forEach(el=>{
+  el.addEventListener("click", ()=> applyTheme(el.getAttribute("data-theme"), false));
+});
+
+// Apply saved theme as early as possible (falls back to light if unavailable)
+getDoc(doc(db,"settings","user")).then(snap=>{
+  if(snap.exists() && snap.data().theme) applyTheme(snap.data().theme, false);
+}).catch(()=>{});
+
+function isValidEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function renderChips(){
+  const box = document.getElementById("emailChipBox");
+  const input = document.getElementById("f_emailInput");
+  box.querySelectorAll(".chip").forEach(c=>c.remove());
+  emailChips.forEach(email=>{
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.innerHTML = `${email} <button type="button" data-remove="${email}">&times;</button>`;
+    box.insertBefore(chip, input);
+  });
+  box.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      emailChips = emailChips.filter(e => e !== btn.getAttribute("data-remove"));
+      renderChips();
+    });
+  });
+}
+
+function addChipFromInput(){
+  const input = document.getElementById("f_emailInput");
+  const val = input.value.trim().replace(/,$/,"");
+  if(val && isValidEmail(val) && !emailChips.includes(val)){
+    emailChips.push(val);
+    renderChips();
+  }
+  input.value = "";
+}
+
+function refreshKnownEmails(){
+  const set = new Set();
+  allTasks.forEach(t => (t.notifyEmails||[]).forEach(e => set.add(e)));
+  const datalist = document.getElementById("knownEmails");
+  datalist.innerHTML = "";
+  [...set].sort().forEach(e=>{
+    const opt = document.createElement("option");
+    opt.value = e;
+    datalist.appendChild(opt);
+  });
+}
+
+document.getElementById("f_emailInput").addEventListener("keydown", (e)=>{
+  if(e.key==="Enter" || e.key===","){
+    e.preventDefault();
+    addChipFromInput();
+  }
+});
+document.getElementById("f_emailInput").addEventListener("change", addChipFromInput);
+document.getElementById("emailChipBox").addEventListener("click", (e)=>{
+  if(e.target.id==="emailChipBox") document.getElementById("f_emailInput").focus();
+});
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+}
+
+function badgeClass(p){
+  if(p==="High") return "badge-high";
+  if(p==="Medium") return "badge-medium";
+  return "badge-low";
+}
+
+function generateTaskId(category, dueDateIso, existing){
+  let cat = category === "Birthday / Anniversary" ? "Bday" : category;
+  const d = new Date(dueDateIso);
+  const year = d.getFullYear();
+  const month = d.toLocaleString("en-US",{month:"short"});
+  const prefix = `${cat}-${year}-${month}-`;
+  const count = existing.filter(t => t.taskId && t.taskId.startsWith(prefix)).length;
+  return prefix + String(count+1).padStart(2,"0");
+}
+
+function renderStats(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  const active = allTasks.filter(t=>t.status==="Pending");
+
+  let overdue=0, dueToday=0, dueTomorrow=0;
+  active.forEach(t=>{
+    if(!t.dueDate) return;
+    const d = new Date(t.dueDate); d.setHours(0,0,0,0);
+    if(d.getTime() === today.getTime()) dueToday++;
+    else if(d.getTime() === tomorrow.getTime()) dueTomorrow++;
+    else if(d.getTime() < today.getTime()) overdue++;
+  });
+
+  document.getElementById("statsBar").innerHTML = `
+    <div class="stat-card rust"><div class="num">${overdue}</div><div class="lbl">Overdue</div></div>
+    <div class="stat-card amber"><div class="num">${dueToday}</div><div class="lbl">Due today</div></div>
+    <div class="stat-card accent"><div class="num">${dueTomorrow}</div><div class="lbl">Due tomorrow</div></div>
+    <div class="stat-card sage"><div class="num">${active.length}</div><div class="lbl">Total pending</div></div>
+  `;
+}
+
+function render(){
+  renderStats();
+  const list = document.getElementById("taskList");
+  const empty = document.getElementById("emptyState");
+  const statusFilter = document.getElementById("statusFilter").value;
+
+  let filtered = allTasks.filter(t=>{
+    const catOk = currentCategoryFilter==="All" || t.category===currentCategoryFilter;
+    const statusOk = statusFilter==="All" || t.status===statusFilter;
+    return catOk && statusOk;
+  });
+
+  filtered.sort((a,b)=> new Date(a.dueDate) - new Date(b.dueDate));
+
+  list.innerHTML = "";
+  empty.style.display = filtered.length ? "none" : "block";
+
+  filtered.forEach(t=>{
+    const card = document.createElement("div");
+    const prioClass = "prio-" + (t.priority||"low").toLowerCase();
+    card.className = "task-card " + prioClass + (t.status==="Completed" ? " done" : "");
+    card.innerHTML = `
+      <div class="check ${t.status==='Completed'?'checked':''}" data-toggle="${t.id}">${t.status==='Completed'?'&#10003;':''}</div>
+      <div class="task-body">
+        <div class="task-top">
+          <span class="task-name ${t.status==='Completed'?'done':''}">${t.name}</span>
+          <span class="badge ${badgeClass(t.priority)}">${t.priority}</span>
+        </div>
+        <div class="task-meta">
+          <span class="id mono">${t.taskId||''}</span>
+          <span>${t.category}</span>
+          <span>Due ${fmtDate(t.dueDate)}</span>
+          ${t.repeatType && t.repeatType!=="None" ? `<span>&#8635; ${t.repeatType}</span>` : ""}
+          ${t.notifyEmails && t.notifyEmails.length ? `<span>&#9993; ${t.notifyEmails.length} email${t.notifyEmails.length>1?'s':''}</span>` : `<span>&#9993; default email</span>`}
+        </div>
+      </div>
+      <div class="task-actions">
+        <button class="btn-icon" data-edit="${t.id}" title="Edit">&#9998;</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll("[data-toggle]").forEach(el=>{
+    el.addEventListener("click", async ()=>{
+      const id = el.getAttribute("data-toggle");
+      const task = allTasks.find(x=>x.id===id);
+      const newStatus = task.status==="Completed" ? "Pending" : "Completed";
+      await updateDoc(doc(db,"tasks",id), { status: newStatus });
+    });
+  });
+  list.querySelectorAll("[data-edit]").forEach(el=>{
+    el.addEventListener("click", ()=> openEditModal(el.getAttribute("data-edit")));
+  });
+}
+
+onSnapshot(query(tasksCol, orderBy("dueDate","asc")), snap=>{
+  allTasks = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  refreshKnownEmails();
+  render();
+});
+
+document.querySelectorAll("[data-filter-cat]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("[data-filter-cat]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentCategoryFilter = btn.getAttribute("data-filter-cat");
+    render();
+  });
+});
+document.getElementById("statusFilter").addEventListener("change", render);
+
+// ---- modal open/close ----
+function openAddModal(){
+  editingId = null;
+  document.getElementById("modalTitle").textContent = "New task";
+  document.getElementById("deleteTaskBtn").style.display = "none";
+  document.getElementById("f_name").value = "";
+  document.getElementById("f_category").value = "Official";
+  document.getElementById("f_priority").value = "High";
+  document.getElementById("f_dueDate").value = "";
+  document.getElementById("f_repeat").value = "None";
+  document.getElementById("f_status").value = "Pending";
+  emailChips = [];
+  renderChips();
+  document.getElementById("taskOverlay").classList.add("open");
+}
+function openEditModal(id){
+  const t = allTasks.find(x=>x.id===id);
+  if(!t) return;
+  editingId = id;
+  document.getElementById("modalTitle").textContent = "Edit task";
+  document.getElementById("deleteTaskBtn").style.display = "inline";
+  document.getElementById("f_name").value = t.name||"";
+  document.getElementById("f_category").value = t.category||"Official";
+  document.getElementById("f_priority").value = t.priority||"High";
+  document.getElementById("f_dueDate").value = t.dueDate||"";
+  document.getElementById("f_repeat").value = t.repeatType||"None";
+  document.getElementById("f_status").value = t.status||"Pending";
+  emailChips = [...(t.notifyEmails||[])];
+  renderChips();
+  document.getElementById("taskOverlay").classList.add("open");
+}
+function closeModal(){ document.getElementById("taskOverlay").classList.remove("open"); }
+
+document.getElementById("addTaskBtn").addEventListener("click", openAddModal);
+document.getElementById("cancelModalBtn").addEventListener("click", closeModal);
+
+document.getElementById("saveTaskBtn").addEventListener("click", async ()=>{
+  addChipFromInput();
+  const name = document.getElementById("f_name").value.trim();
+  const dueDate = document.getElementById("f_dueDate").value;
+  if(!name || !dueDate){ toast("Task name o due date lagbe"); return; }
+
+  const data = {
+    name,
+    category: document.getElementById("f_category").value,
+    priority: document.getElementById("f_priority").value,
+    dueDate,
+    repeatType: document.getElementById("f_repeat").value,
+    status: document.getElementById("f_status").value,
+    notifyEmails: [...emailChips],
+  };
+
+  if(editingId){
+    await updateDoc(doc(db,"tasks",editingId), data);
+    toast("Task updated");
+  } else {
+    data.taskId = generateTaskId(data.category, data.dueDate, allTasks);
+    data.reminder1Sent = false;
+    data.reminder2Sent = false;
+    data.createdAt = new Date().toISOString();
+    await addDoc(tasksCol, data);
+    toast("Task added");
+  }
+  closeModal();
+});
+
+document.getElementById("deleteTaskBtn").addEventListener("click", async ()=>{
+  if(!editingId) return;
+  await deleteDoc(doc(db,"tasks",editingId));
+  toast("Task deleted");
+  closeModal();
+});
+
+// ---- settings ----
+const settingsOverlay = document.getElementById("settingsOverlay");
+const pushSwitch = document.getElementById("pushSwitch");
+let pushEnabledState = false;
+
+document.getElementById("settingsBtn").addEventListener("click", async ()=>{
+  settingsOverlay.classList.add("open");
+  try{
+    const snap = await getDoc(SETTINGS_DOC);
+    const s = snap.exists() ? snap.data() : {};
+    document.getElementById("f_email").value = s.notifyEmail || "";
+    pushEnabledState = !!s.pushEnabled;
+    pushSwitch.classList.toggle("on", pushEnabledState);
+    applyTheme(s.theme || "light", false);
+  }catch(e){
+    console.error(e);
+    toast("Settings load korte problem hoyeche, connection check koro");
+  }
+});
+document.getElementById("closeSettingsBtn").addEventListener("click", ()=> settingsOverlay.classList.remove("open"));
+pushSwitch.addEventListener("click", ()=>{
+  pushEnabledState = !pushEnabledState;
+  pushSwitch.classList.toggle("on", pushEnabledState);
+});
+
+document.getElementById("saveSettingsBtn").addEventListener("click", async ()=>{
+  const notifyEmail = document.getElementById("f_email").value.trim();
+  let fcmToken = null;
+
+  if(pushEnabledState){
+    try{
+      const supported = await isSupported();
+      if(supported){
+        const reg = await navigator.serviceWorker.register("firebase-messaging-sw.js");
+        const permission = await Notification.requestPermission();
+        if(permission === "granted"){
+          const messaging = getMessaging(app);
+          fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+        } else {
+          toast("Push permission deya hoyni");
+          pushEnabledState = false;
+        }
+      }
+    }catch(e){
+      console.error(e);
+      toast("Push setup e error hoyeche");
+      pushEnabledState = false;
+    }
+  }
+
+  const payload = { notifyEmail, pushEnabled: pushEnabledState, theme: selectedTheme };
+  if(fcmToken) payload.fcmToken = fcmToken;
+  try{
+    await setDoc(SETTINGS_DOC, payload, { merge:true });
+    toast("Settings saved");
+    settingsOverlay.classList.remove("open");
+  }catch(e){
+    console.error(e);
+    toast("Save korte problem hoyeche, connection check koro");
+  }
+});
+</script>
+</body>
+</html>

@@ -2,8 +2,11 @@ name: Daily task reminder
 
 on:
   schedule:
-    # 3:00 UTC = 9:00 am Asia/Dhaka (UTC+6)
-    - cron: "0 3 * * *"
+    # 2:05 UTC = 8:05 am Asia/Dhaka (UTC+6).
+    # Deliberately NOT on the exact hour — GitHub documents that jobs
+    # scheduled exactly on the hour are more likely to be delayed or
+    # dropped during high-load periods. A few minutes past avoids that.
+    - cron: "5 2 * * *"
   workflow_dispatch: {}
 
 jobs:

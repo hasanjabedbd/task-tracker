@@ -1,5 +1,5 @@
 // Daily reminder checker — mirrors the original Apps Script logic.
-// Runs once a day (9:00 am Asia/Dhaka) via GitHub Actions.
+// Runs once a day (8:05 am Asia/Dhaka) via GitHub Actions.
 
 import admin from "firebase-admin";
 import nodemailer from "nodemailer";

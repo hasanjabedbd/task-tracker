@@ -31,7 +31,7 @@ Firebase gives you a live URL like `https://your-project.web.app` — that's you
    - `FIREBASE_SERVICE_ACCOUNT` — paste the entire content of that JSON file
    - `GMAIL_USER` — your Gmail address
    - `GMAIL_APP_PASSWORD` — a Gmail **App Password** (not your normal password): Google Account → Security → 2-Step Verification (turn on if needed) → App passwords → generate one for "Mail"
-4. That's it — the workflow in `.github/workflows/reminder.yml` runs automatically every day at 9:00 am Dhaka time. You can also trigger it manually from the Actions tab ("Run workflow") to test it immediately.
+4. That's it — the workflow in `.github/workflows/reminder.yml` runs automatically every day at 8:05 am Dhaka time. You can also trigger it manually from the Actions tab ("Run workflow") to test it immediately.
 
 ## 4. Security — read before relying on this long-term
 

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <style>
   :root{
     --ink:#191d2b;
@@ -87,72 +88,81 @@
   }
   .mono{font-family:'JetBrains Mono',"SFMono-Regular",Consolas,monospace;}
   header{
-    padding:28px 28px 20px;
+    padding:22px 28px 18px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     flex-wrap:wrap;
-    gap:14px;
+    gap:12px;
     max-width:960px;
     margin:0 auto;
+    border-bottom:1px solid var(--line);
+    margin-bottom:6px;
   }
   header h1{
     margin:0;
-    font-size:24px;
+    font-size:22px;
     font-weight:800;
-    letter-spacing:-0.02em;
+    letter-spacing:-0.03em;
+    background:linear-gradient(135deg,var(--ink) 60%,var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
   }
   header .eyebrow{
     display:block;
-    font-size:11px;
+    font-size:10px;
     font-weight:700;
-    letter-spacing:0.1em;
+    letter-spacing:0.12em;
     text-transform:uppercase;
     color:var(--accent);
-    margin-bottom:4px;
+    margin-bottom:3px;
+    opacity:0.8;
   }
-  .header-actions{display:flex;gap:10px;align-items:center;}
+  .header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   button{
     font-family:inherit;
     cursor:pointer;
     border:none;
   }
   .btn{
-    padding:10px 18px;
+    padding:9px 18px;
     border-radius:999px;
-    font-size:13.5px;
+    font-size:13px;
     font-weight:600;
     background:var(--paper-2);
     border:1px solid var(--line-strong);
     color:var(--ink);
     box-shadow:var(--shadow-sm);
-    transition:transform .1s, box-shadow .15s;
+    transition:transform .12s, box-shadow .15s, background .12s;
   }
   .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
   .btn-primary{
     background:linear-gradient(135deg,var(--accent),var(--accent-2));
     color:#fff;
     border:1px solid transparent;
+    box-shadow:0 2px 10px -2px rgba(67,56,202,0.35);
   }
+  .btn-primary:hover{box-shadow:0 4px 16px -4px rgba(67,56,202,0.45);}
   .btn-icon{
-    width:38px;height:38px;
-    border-radius:12px;
+    width:36px;height:36px;
+    border-radius:10px;
     display:inline-flex;align-items:center;justify-content:center;
     background:var(--paper-2);
     border:1px solid var(--line);
-    font-size:17px;
+    font-size:16px;
     color:var(--muted);
     box-shadow:var(--shadow-sm);
-    transition:transform .1s;
+    transition:all .12s;
   }
-  .btn-icon:hover{color:var(--accent);transform:translateY(-1px);}
-  main{padding:6px 28px 70px;max-width:960px;margin:0 auto;}
+  .btn-icon:hover{color:var(--accent);background:var(--accent-soft);border-color:var(--accent);transform:translateY(-1px);}
+  main{padding:20px 28px 70px;max-width:960px;margin:0 auto;}
 
   .stats{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:12px;
-    margin-bottom:22px;
+    grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:10px;
+    margin-bottom:20px;
   }
   .stat-card{
     background:var(--paper-2);
@@ -160,9 +170,21 @@
     border-radius:var(--radius);
     padding:16px 18px;
     box-shadow:var(--shadow-sm);
+    position:relative;
+    overflow:hidden;
+    transition:transform .12s, box-shadow .15s;
   }
-  .stat-card .num{font-size:26px;font-weight:800;letter-spacing:-0.02em;}
-  .stat-card .lbl{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
+  .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+  .stat-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--line);border-radius:var(--radius) var(--radius) 0 0;
+  }
+  .stat-card.rust::before{background:var(--rust);}
+  .stat-card.amber::before{background:var(--amber);}
+  .stat-card.accent::before{background:var(--accent);}
+  .stat-card.sage::before{background:var(--sage);}
+  .stat-card .num{font-size:28px;font-weight:800;letter-spacing:-0.03em;line-height:1;}
+  .stat-card .lbl{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:4px;letter-spacing:0.01em;}
   .stat-card.rust .num{color:var(--rust);}
   .stat-card.amber .num{color:var(--amber);}
   .stat-card.accent .num{color:var(--accent);}
@@ -170,102 +192,114 @@
 
   .toolbar{
     display:flex;
-    gap:8px;
+    gap:6px;
     flex-wrap:wrap;
-    margin:0 0 18px;
+    margin:0 0 16px;
     align-items:center;
-  }
-  .pill{
-    padding:8px 16px;
-    border-radius:999px;
-    font-size:12.5px;
-    font-weight:700;
     background:var(--paper-2);
     border:1px solid var(--line);
+    border-radius:14px;
+    padding:8px;
+  }
+  .pill{
+    padding:7px 15px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background:transparent;
+    border:1px solid transparent;
     color:var(--muted);
     transition:all .12s;
   }
-  .pill:hover{border-color:var(--accent);color:var(--accent);}
+  .pill:hover{background:var(--accent-soft);color:var(--accent);}
   .pill.active{
     background:var(--ink);
-    color:#fff;
+    color:var(--paper);
     border-color:var(--ink);
   }
   .toolbar select{
     margin-left:auto;
-    padding:9px 12px;
+    padding:7px 12px;
     border-radius:10px;
     border:1px solid var(--line);
-    background:var(--paper-2);
-    font-size:12.5px;
+    background:var(--paper);
+    font-size:12px;
     font-weight:600;
     color:var(--ink);
+    font-family:inherit;
   }
-  .task-list{display:flex;flex-direction:column;gap:10px;}
+  .task-list{display:flex;flex-direction:column;gap:8px;}
   .task-card{
     background:var(--paper-2);
     border:1px solid var(--line);
-    border-left:4px solid var(--line-strong);
+    border-left:3px solid var(--line-strong);
     border-radius:var(--radius);
-    padding:15px 18px;
+    padding:14px 16px;
     display:flex;
-    gap:14px;
+    gap:12px;
     align-items:flex-start;
     box-shadow:var(--shadow-sm);
-    transition:transform .1s, box-shadow .15s;
+    transition:transform .12s, box-shadow .15s, border-color .12s;
   }
-  .task-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+  .task-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);border-color:var(--line-strong);}
   .task-card.prio-high{border-left-color:var(--rust);}
   .task-card.prio-medium{border-left-color:var(--amber);}
   .task-card.prio-low{border-left-color:var(--sage);}
-  .task-card.done{opacity:0.55;}
+  .task-card.done{opacity:0.5;}
+  .task-card.overdue{background:var(--rust-bg);border-left-color:var(--rust);}
+  .task-card.card-selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
   .check{
-    width:22px;height:22px;
-    border-radius:7px;
+    width:20px;height:20px;
+    border-radius:6px;
     border:1.5px solid var(--line-strong);
     flex:none;
-    margin-top:1px;
+    margin-top:2px;
     display:flex;align-items:center;justify-content:center;
     background:var(--paper-2);
     cursor:pointer;
     transition:all .12s;
+    font-size:12px;
   }
-  .check:hover{border-color:var(--accent);}
-  .check.checked{background:var(--sage);border-color:var(--sage);color:#fff;font-size:14px;}
+  .check:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .check.checked{background:var(--sage);border-color:var(--sage);color:#fff;}
+  .check.checked.select-mode{background:var(--accent);border-color:var(--accent);}
   .task-body{flex:1;min-width:0;}
-  .task-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .task-name{font-size:15px;font-weight:700;letter-spacing:-0.01em;}
-  .task-name.done{text-decoration:line-through;}
+  .task-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .task-name{font-size:14.5px;font-weight:700;letter-spacing:-0.01em;}
+  .task-name.done{text-decoration:line-through;opacity:0.7;}
   .badge{
-    font-size:10.5px;
+    font-size:10px;
     font-weight:700;
-    padding:3px 9px;
+    padding:2px 8px;
     border-radius:999px;
-    letter-spacing:0.02em;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
   }
   .badge-high{background:var(--rust-bg);color:var(--rust);}
   .badge-medium{background:var(--amber-bg);color:var(--amber);}
   .badge-low{background:var(--sage-bg);color:var(--sage);}
   .task-meta{
     margin-top:5px;
-    font-size:12px;
+    font-size:11.5px;
     color:var(--muted);
     display:flex;
-    gap:12px;
+    gap:10px;
     flex-wrap:wrap;
     font-weight:500;
+    align-items:center;
   }
-  .task-meta .id{color:var(--line-strong);}
-  .task-actions{display:flex;gap:6px;flex:none;}
+  .task-meta span{display:inline-flex;align-items:center;gap:3px;}
+  .task-meta .id{color:var(--line-strong);font-family:'JetBrains Mono',monospace;font-size:10.5px;}
+  .task-actions{display:flex;gap:4px;flex:none;}
   .empty{
     text-align:center;
-    padding:70px 20px;
+    padding:60px 20px;
     color:var(--muted);
     background:var(--paper-2);
     border-radius:var(--radius);
     border:1px dashed var(--line-strong);
   }
-  .empty .glyph{font-size:30px;display:block;margin-bottom:10px;}
+  .empty .glyph{font-size:32px;display:block;margin-bottom:12px;opacity:0.5;}
   /* modal */
   .overlay{
     position:fixed;inset:0;
@@ -309,7 +343,7 @@
     color:var(--ink);
   }
   .field input:focus,.field select:focus,.field textarea:focus{
-    outline:none;border-color:var(--accent);background:#fff;
+    outline:none;border-color:var(--accent);background:var(--paper);box-shadow:0 0 0 3px var(--accent-soft);
   }
   .field textarea{resize:vertical;min-height:56px;}
   .chip-box{
@@ -317,7 +351,7 @@
     padding:8px;border-radius:10px;border:1px solid var(--line-strong);
     background:var(--paper);
   }
-  .chip-box:focus-within{border-color:var(--accent);background:#fff;}
+  .chip-box:focus-within{border-color:var(--accent);background:var(--paper);box-shadow:0 0 0 3px var(--accent-soft);}
   .chip{
     display:inline-flex;align-items:center;gap:6px;
     background:var(--accent-soft);color:var(--accent);
@@ -374,7 +408,7 @@
   .theme-swatch .tname{font-size:11.5px;font-weight:700;}
   .toast{
     position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-    background:var(--ink);color:#fff;
+    background:var(--ink);color:var(--paper);
     padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600;
     opacity:0;pointer-events:none;transition:opacity .2s;
     z-index:100;box-shadow:var(--shadow-md);
@@ -389,9 +423,60 @@
     text-align:center;padding:20px;font-size:11.5px;color:var(--muted);font-weight:600;
     letter-spacing:0.02em;
   }
+  html[data-theme="dark"]{ color-scheme: dark; }
+  html[data-theme="light"], html[data-theme="sepia"]{ color-scheme: light; }
+  html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator{ filter: invert(0.85); }
+  html[data-theme="dark"] .btn-primary{ color:#1a1610; }
+  html[data-theme="dark"] .btn-icon.active-icon{ color:#1a1610; }
+  select, option{ background:var(--paper-2); color:var(--ink); }
+  .btn-icon.active-icon{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .bulk-bar{
+    display:none;align-items:center;gap:14px;flex-wrap:wrap;
+    background:var(--accent-soft);color:var(--accent);
+    padding:10px 16px;border-radius:12px;
+    font-size:12.5px;font-weight:700;margin:-10px 0 18px;
+  }
+  .bulk-bar.show{display:flex;}
+  .bulk-bar label{display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .bulk-bar .btn{padding:7px 14px;font-size:12px;}
+  .login-screen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .login-card{
+    background:var(--paper-2);border:1px solid var(--line);
+    border-radius:20px;padding:34px 30px;width:100%;max-width:380px;
+    box-shadow:0 30px 60px -20px rgba(25,29,43,0.25);
+  }
+  .login-card h1{margin:0 0 4px;font-size:22px;font-weight:800;letter-spacing:-0.02em;}
+  .login-sub{margin:0 0 22px;font-size:13px;color:var(--muted);font-weight:600;}
+  .login-btn{width:100%;padding:12px;font-size:14px;margin-top:6px;}
+  .login-error{
+    background:var(--rust-bg);color:var(--rust);font-size:12.5px;font-weight:600;
+    padding:10px 12px;border-radius:8px;margin-bottom:14px;
+  }
 </style>
 </head>
 <body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h1>Task Tracker</h1>
+    <p class="login-sub">Sign in to continue</p>
+    <div class="field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="you@gmail.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password">
+    </div>
+    <div class="login-error" id="loginError" style="display:none;"></div>
+    <button class="btn btn-primary login-btn" id="loginBtn">Sign in</button>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
 
 <header>
   <div>
@@ -399,16 +484,29 @@
   </div>
   <div class="header-actions">
     <button class="btn-icon" id="settingsBtn" title="Settings">&#9881;</button>
+    <button class="btn-icon" id="selectModeBtn" title="Select tasks">&#9745;</button>
+    <button class="btn-icon" id="exportBtn" title="Export to Excel">&#8659;</button>
+    <button class="btn-icon" id="importBtn" title="Import from Excel">&#8657;</button>
+    <button class="btn-icon" id="templateBtn" title="Download import template">&#9113;</button>
+    <button class="btn-icon" id="logoutBtn" title="Logout">&#10162;</button>
     <button class="btn btn-primary" id="addTaskBtn">+ New task</button>
   </div>
+  <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;">
 </header>
 
 <div id="configWarning" class="config-warning" style="display:none;">
-  Firebase config bosano hoyni ekhono &mdash; index.html file-er upore firebaseConfig object-e nijer project-er values boso.
+  Firebase config is not set up yet &mdash; replace the values in the firebaseConfig object at the top of index.html with your project's credentials.
 </div>
 
 <main>
   <div class="stats" id="statsBar"></div>
+
+  <div class="bulk-bar" id="bulkBar">
+    <label><input type="checkbox" id="selectAllChk"> Select all</label>
+    <span id="selectedCount">0 selected</span>
+    <button class="btn" id="deleteSelectedBtn">Delete selected</button>
+    <button class="btn" id="cancelSelectBtn">Cancel</button>
+  </div>
 
   <div class="toolbar">
     <button class="pill active" data-filter-cat="All">All</button>
@@ -417,6 +515,7 @@
     <button class="pill" data-filter-cat="Birthday / Anniversary">Birthday</button>
     <select id="statusFilter">
       <option value="Pending">Pending</option>
+      <option value="Overdue">Overdue</option>
       <option value="All">All statuses</option>
       <option value="Completed">Completed</option>
       <option value="Cancelled">Cancelled</option>
@@ -426,7 +525,7 @@
   <div class="task-list" id="taskList"></div>
   <div class="empty" id="emptyState" style="display:none;">
     <span class="glyph">&#9711;</span>
-    Kono task nai ei filter-e.
+    No tasks match this filter.
   </div>
 </main>
 
@@ -489,7 +588,7 @@
         <input type="text" id="f_emailInput" class="chip-input" list="knownEmails" placeholder="Type email, enter to add">
       </div>
       <datalist id="knownEmails"></datalist>
-      <div class="hint">Ei task-er reminder ei email(s)-e jabe. Age use kora email dropdown-e ashbe, notun-o type kora jay.</div>
+      <div class="hint">Reminders for this task will be sent to these email(s). Previously used emails appear in the dropdown; you can also type new ones.</div>
     </div>
     <div class="modal-actions">
       <button class="link-btn" id="deleteTaskBtn" style="display:none;margin-right:auto;">Delete task</button>
@@ -506,12 +605,12 @@
     <div class="field">
       <label for="f_email">Default email(s)</label>
       <textarea id="f_email" placeholder="you@gmail.com, colleague@gmail.com"></textarea>
-      <div class="hint">Kono task-e nijer email na dile ei default email(s)-e reminder jabe. Ekadhik hole comma diye alada koro.</div>
+      <div class="hint">If no email is set on a task, reminders will go to this default email(s). Separate multiple with commas.</div>
     </div>
     <div class="settings-row">
       <div>
         <div class="label">Push notifications</div>
-        <div class="desc">Reminder o email-er shathe browser push-o pathabe</div>
+        <div class="desc">Send browser push notifications along with email reminders</div>
       </div>
       <div class="switch" id="pushSwitch"></div>
     </div>
@@ -541,6 +640,7 @@
 
 <div class="toast" id="toast"></div>
 <footer>Designed by Hasan Jabed</footer>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -549,9 +649,10 @@ import {
   onSnapshot, query, orderBy, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { getMessaging, getToken, isSupported } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 // ============================================================
-// FIREBASE CONFIG — nijer Firebase project-er values ekhane boso
+// FIREBASE CONFIG — replace with your Firebase project values
 // (Firebase console > Project settings > General > Your apps > SDK setup)
 // ============================================================
 const firebaseConfig = {
@@ -562,8 +663,8 @@ const firebaseConfig = {
   messagingSenderId: "596367601178",
   appId: "1:596367601178:web:27692ab5c2d6b7a156eba3"
 };
-// Push notification-er jonno VAPID key (Firebase console > Project settings > Cloud Messaging > Web Push certificates)
-const VAPID_KEY = "YOUR_VAPID_KEY";
+// VAPID key for push notifications (Firebase console > Project settings > Cloud Messaging > Web Push certificates)
+const VAPID_KEY = "BH8XBxAbksxnNhKvJk4NFhLA4c143xJcxX6LlWFB5RGQzkN8e3SZcW0Ez9OmFyBzgRKavLfzQD6KqxzGtnAx1wM";
 // ============================================================
 
 if (firebaseConfig.apiKey === "YOUR_API_KEY") {
@@ -572,6 +673,45 @@ if (firebaseConfig.apiKey === "YOUR_API_KEY") {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ---- Login / logout ----
+const loginScreen = document.getElementById("loginScreen");
+const appRoot = document.getElementById("appRoot");
+const loginError = document.getElementById("loginError");
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    loginScreen.style.display = "none";
+    appRoot.style.display = "block";
+  } else {
+    loginScreen.style.display = "flex";
+    appRoot.style.display = "none";
+  }
+});
+
+async function doLogin(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  loginError.style.display = "none";
+  if(!email || !password){
+    loginError.textContent = "Please enter your email and password";
+    loginError.style.display = "block";
+    return;
+  }
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+  }catch(e){
+    console.error(e);
+    loginError.textContent = "Login failed — please check your email and password";
+    loginError.style.display = "block";
+  }
+}
+document.getElementById("loginBtn").addEventListener("click", doLogin);
+document.getElementById("loginPassword").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") doLogin();
+});
+document.getElementById("logoutBtn").addEventListener("click", ()=> signOut(auth));
 
 const SETTINGS_DOC = doc(db, "settings", "user");
 const tasksCol = collection(db, "tasks");
@@ -581,6 +721,9 @@ let currentCategoryFilter = "All";
 let editingId = null;
 let emailChips = [];
 let selectedTheme = "light";
+let selectionMode = false;
+let selectedIds = new Set();
+let lastFilteredIds = [];
 
 function applyTheme(theme, save){
   selectedTheme = theme;
@@ -705,6 +848,21 @@ function renderStats(){
   `;
 }
 
+function isOverdue(t){
+  if(t.status !== "Pending" || !t.dueDate) return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(t.dueDate); d.setHours(0,0,0,0);
+  return d.getTime() < today.getTime();
+}
+
+function updateBulkBar(){
+  const bar = document.getElementById("bulkBar");
+  bar.classList.toggle("show", selectionMode);
+  document.getElementById("selectedCount").textContent = `${selectedIds.size} selected`;
+  const allChk = document.getElementById("selectAllChk");
+  allChk.checked = lastFilteredIds.length>0 && lastFilteredIds.every(id=>selectedIds.has(id));
+}
+
 function render(){
   renderStats();
   const list = document.getElementById("taskList");
@@ -713,11 +871,14 @@ function render(){
 
   let filtered = allTasks.filter(t=>{
     const catOk = currentCategoryFilter==="All" || t.category===currentCategoryFilter;
-    const statusOk = statusFilter==="All" || t.status===statusFilter;
+    let statusOk;
+    if(statusFilter==="Overdue") statusOk = isOverdue(t);
+    else statusOk = statusFilter==="All" || t.status===statusFilter;
     return catOk && statusOk;
   });
 
   filtered.sort((a,b)=> new Date(a.dueDate) - new Date(b.dueDate));
+  lastFilteredIds = filtered.map(t=>t.id);
 
   list.innerHTML = "";
   empty.style.display = filtered.length ? "none" : "block";
@@ -725,13 +886,20 @@ function render(){
   filtered.forEach(t=>{
     const card = document.createElement("div");
     const prioClass = "prio-" + (t.priority||"low").toLowerCase();
-    card.className = "task-card " + prioClass + (t.status==="Completed" ? " done" : "");
+    const overdue = isOverdue(t);
+    const isSelected = selectionMode && selectedIds.has(t.id);
+    card.className = "task-card " + prioClass
+      + (t.status==="Completed" ? " done" : "")
+      + (overdue ? " overdue" : "")
+      + (isSelected ? " card-selected" : "");
+    const checkedVisual = selectionMode ? isSelected : t.status==='Completed';
     card.innerHTML = `
-      <div class="check ${t.status==='Completed'?'checked':''}" data-toggle="${t.id}">${t.status==='Completed'?'&#10003;':''}</div>
+      <div class="check ${checkedVisual?'checked':''} ${selectionMode?'select-mode':''}" data-id="${t.id}">${checkedVisual?'&#10003;':''}</div>
       <div class="task-body">
         <div class="task-top">
           <span class="task-name ${t.status==='Completed'?'done':''}">${t.name}</span>
           <span class="badge ${badgeClass(t.priority)}">${t.priority}</span>
+          ${overdue ? `<span class="badge badge-high">Overdue</span>` : ""}
         </div>
         <div class="task-meta">
           <span class="id mono">${t.taskId||''}</span>
@@ -748,17 +916,27 @@ function render(){
     list.appendChild(card);
   });
 
-  list.querySelectorAll("[data-toggle]").forEach(el=>{
+  list.querySelectorAll(".check").forEach(el=>{
     el.addEventListener("click", async ()=>{
-      const id = el.getAttribute("data-toggle");
+      const id = el.getAttribute("data-id");
+      if(selectionMode){
+        if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+        render();
+        return;
+      }
       const task = allTasks.find(x=>x.id===id);
       const newStatus = task.status==="Completed" ? "Pending" : "Completed";
       await updateDoc(doc(db,"tasks",id), { status: newStatus });
     });
   });
   list.querySelectorAll("[data-edit]").forEach(el=>{
-    el.addEventListener("click", ()=> openEditModal(el.getAttribute("data-edit")));
+    el.addEventListener("click", ()=>{
+      if(selectionMode) return;
+      openEditModal(el.getAttribute("data-edit"));
+    });
   });
+
+  if(selectionMode) updateBulkBar();
 }
 
 onSnapshot(query(tasksCol, orderBy("dueDate","asc")), snap=>{
@@ -776,6 +954,43 @@ document.querySelectorAll("[data-filter-cat]").forEach(btn=>{
   });
 });
 document.getElementById("statusFilter").addEventListener("change", render);
+
+document.getElementById("selectModeBtn").addEventListener("click", ()=>{
+  selectionMode = !selectionMode;
+  selectedIds.clear();
+  document.getElementById("selectModeBtn").classList.toggle("active-icon", selectionMode);
+  document.getElementById("bulkBar").classList.toggle("show", selectionMode);
+  render();
+});
+document.getElementById("cancelSelectBtn").addEventListener("click", ()=>{
+  selectionMode = false;
+  selectedIds.clear();
+  document.getElementById("selectModeBtn").classList.remove("active-icon");
+  document.getElementById("bulkBar").classList.remove("show");
+  render();
+});
+document.getElementById("selectAllChk").addEventListener("change", (e)=>{
+  if(e.target.checked) lastFilteredIds.forEach(id=>selectedIds.add(id));
+  else selectedIds.clear();
+  render();
+});
+document.getElementById("deleteSelectedBtn").addEventListener("click", async ()=>{
+  if(selectedIds.size===0){ toast("No tasks selected"); return; }
+  const count = selectedIds.size;
+  if(!confirm(`Delete ${count} task${count>1?'s':''}? This cannot be undone.`)) return;
+  try{
+    for(const id of selectedIds){ await deleteDoc(doc(db,"tasks",id)); }
+    toast(`${count} task${count>1?'s':''} deleted`);
+  }catch(e){
+    console.error(e);
+    toast("Failed to delete tasks");
+  }
+  selectedIds.clear();
+  selectionMode = false;
+  document.getElementById("selectModeBtn").classList.remove("active-icon");
+  document.getElementById("bulkBar").classList.remove("show");
+  render();
+});
 
 // ---- modal open/close ----
 function openAddModal(){
@@ -817,7 +1032,7 @@ document.getElementById("saveTaskBtn").addEventListener("click", async ()=>{
   addChipFromInput();
   const name = document.getElementById("f_name").value.trim();
   const dueDate = document.getElementById("f_dueDate").value;
-  if(!name || !dueDate){ toast("Task name o due date lagbe"); return; }
+  if(!name || !dueDate){ toast("Task name and due date are required"); return; }
 
   const data = {
     name,
@@ -866,13 +1081,88 @@ document.getElementById("settingsBtn").addEventListener("click", async ()=>{
     applyTheme(s.theme || "light", false);
   }catch(e){
     console.error(e);
-    toast("Settings load korte problem hoyeche, connection check koro");
+    toast("Failed to load settings — please check your connection");
   }
 });
 document.getElementById("closeSettingsBtn").addEventListener("click", ()=> settingsOverlay.classList.remove("open"));
 pushSwitch.addEventListener("click", ()=>{
   pushEnabledState = !pushEnabledState;
   pushSwitch.classList.toggle("on", pushEnabledState);
+});
+
+// ---- Excel export ----
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  if(!allTasks.length){ toast("No tasks to export"); return; }
+  const rows = allTasks.map(t=>({
+    "Task ID": t.taskId||"",
+    "Name": t.name||"",
+    "Category": t.category||"",
+    "Priority": t.priority||"",
+    "Due Date": t.dueDate||"",
+    "Status": t.status||"",
+    "Repeat": t.repeatType||"None",
+    "Notify Emails": (t.notifyEmails||[]).join(", "),
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Tasks");
+  XLSX.writeFile(wb, "tasks_export.xlsx");
+  toast("Exported to tasks_export.xlsx");
+});
+
+// ---- Import template download ----
+document.getElementById("templateBtn").addEventListener("click", ()=>{
+  const rows = [{
+    "Name": "Example Task",
+    "Category": "Official",
+    "Priority": "High",
+    "Due Date": "2025-12-31",
+    "Status": "Pending",
+    "Repeat": "None",
+    "Notify Emails": "you@example.com",
+  }];
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Tasks");
+  XLSX.writeFile(wb, "tasks_import_template.xlsx");
+  toast("Template downloaded");
+});
+
+// ---- Excel import ----
+document.getElementById("importBtn").addEventListener("click", ()=>{
+  document.getElementById("importFileInput").value = "";
+  document.getElementById("importFileInput").click();
+});
+document.getElementById("importFileInput").addEventListener("change", async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data);
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+  if(!rows.length){ toast("No data found in file"); return; }
+  let added = 0, skipped = 0;
+  for(const row of rows){
+    const name = (row["Name"]||"").trim();
+    const dueDate = (row["Due Date"]||"").trim();
+    if(!name || !dueDate){ skipped++; continue; }
+    const emails = (row["Notify Emails"]||"").split(",").map(s=>s.trim()).filter(Boolean);
+    const taskData = {
+      name,
+      category: row["Category"]||"Official",
+      priority: row["Priority"]||"High",
+      dueDate,
+      repeatType: row["Repeat"]||"None",
+      status: row["Status"]||"Pending",
+      notifyEmails: emails,
+      reminder1Sent: false,
+      reminder2Sent: false,
+      createdAt: new Date().toISOString(),
+    };
+    taskData.taskId = generateTaskId(taskData.category, taskData.dueDate, allTasks);
+    await addDoc(tasksCol, taskData);
+    added++;
+  }
+  toast(`Imported ${added} task${added!==1?'s':''}${skipped?`, ${skipped} skipped`:''}`);
 });
 
 document.getElementById("saveSettingsBtn").addEventListener("click", async ()=>{
@@ -889,13 +1179,13 @@ document.getElementById("saveSettingsBtn").addEventListener("click", async ()=>{
           const messaging = getMessaging(app);
           fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
         } else {
-          toast("Push permission deya hoyni");
-          pushEnabledState = false;
+          toast("Push permission was not granted");
+      pushEnabledState = false;
         }
       }
     }catch(e){
       console.error(e);
-      toast("Push setup e error hoyeche");
+      toast("Push notification setup failed");
       pushEnabledState = false;
     }
   }
@@ -908,7 +1198,7 @@ document.getElementById("saveSettingsBtn").addEventListener("click", async ()=>{
     settingsOverlay.classList.remove("open");
   }catch(e){
     console.error(e);
-    toast("Save korte problem hoyeche, connection check koro");
+    toast("Failed to save settings — please check your connection");
   }
 });
 </script>

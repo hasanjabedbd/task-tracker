@@ -1,11 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TEMPORARY: open access so the app works without a login screen.
-    // Anyone with your Firestore URL could read/write your tasks like this.
-    // See SETUP.md "Security" section before you rely on this long-term.
+    // Only your logged-in account can read/write, now that login is wired up.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
   }
 }
